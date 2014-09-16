@@ -39,7 +39,7 @@ class Piece
     test_board = self.board.dup
     test_board[self.pos] = self.class.new(test_board, self.color, self.pos)
     begin
-      test_board.move(self.pos, new_pos)
+      test_board.move(self.pos, new_pos, self.color)
     rescue RuntimeError
       return false
     end

@@ -72,7 +72,7 @@ class Board
     end && in_check?(color)  #need to test
   end
 
-  def move(start, end_pos, color = :white)      #just to save from errors
+  def move(start, end_pos, color)
 
     raise "Move your own piece, cheater!" unless self[start].color == color
     raise "No piece at that position." if self[start].nil?
