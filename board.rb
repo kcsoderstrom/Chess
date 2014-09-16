@@ -146,8 +146,44 @@ class Board
     end
   end
 
-  protected
+  public
+
   def chars_array(turn)
+    chars_array = convert_to_chars
+
+    y, x = cursor.row, cursor.col
+
+    unless @prev_pos.nil?
+      current_piece = self[@prev_pos]
+      hold_highlight_on_selected_piece(chars_array)
+      highlight_available_moves(current_piece, chars_array, turn)
+    end
+
+    highlight_cursor(chars_array)
+    chars_array
+  end
+
+  def highlight_available_moves(current_piece, chars_array, turn)
+    unless current_piece.nil? || current_piece.color != turn
+      current_piece.valid_moves.each do |move|
+        move_char = chars_array[move[0]][move[1]]
+        move_char = move_char.colorize(:background => :green)
+        chars_array[move[0]][move[1]] = move_char
+      end
+    end
+  end
+
+  def hold_highlight_on_selected_piece(chars_array)
+    y, x = @prev_pos[0], @prev_pos[1]
+    chars_array[y][x] = chars_array[y][x].colorize(:background => :cyan)
+  end
+
+  def highlight_cursor(chars_array)
+    y, x = cursor.row, cursor.col
+    chars_array[y][x] = chars_array[y][x].colorize(:background => :cyan)
+  end
+
+  def convert_to_chars
     chars_array = self.rows.map(&:dup)
 
     8.times do |y|
@@ -159,34 +195,14 @@ class Board
             char = BLACK_CHARS[piece.class.to_s.to_sym]
           end
           char = char.colorize(piece.color)
-          char = char.colorize( :background => background_color_swap)
+          char = char.colorize( :background => background_color_swap )
           chars_array[y][x] = char
         else
-          chars_array[y][x] = ' '.colorize(:color => background_color_swap, :background => @bg_color)
+          chars_array[y][x] = ' '.colorize(:background => background_color_swap)
         end
       end
       background_color_swap
     end
-
-    y, x = cursor.row, cursor.col
-
-    current_piece = self[[y, x]] if @prev_pos.nil?
-    unless @prev_pos.nil?
-      py, px = @prev_pos[0], @prev_pos[1]
-      chars_array[py][px] = chars_array[py][px].colorize(:background => :cyan)
-    end
-
-    current_piece = self[@prev_pos] unless @prev_pos.nil?
-    unless current_piece.nil? || current_piece.color != turn
-      current_piece.valid_moves.each do |move|
-        move_char = chars_array[move[0]][move[1]]
-        move_char = move_char.colorize(:background => :green)
-        chars_array[move[0]][move[1]] = move_char
-      end
-    end
-
-    chars_array[y][x] = chars_array[y][x].colorize(:background => :cyan)
-
     chars_array
   end
 
@@ -195,10 +211,7 @@ class Board
 
     str = ''
     chars_array.each do |row|
-      row.each do |char|
-        #str << ' '
-        str << char
-      end
+      row.each { |char| str << char }
       str << "\n"
     end
     str
