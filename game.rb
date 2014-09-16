@@ -4,6 +4,55 @@ require_relative 'title_screen'
 
 class Game
 
+  attr_reader :title_screen, :board
+
+  def initialize(board = Board.new, title_screen = TitleScreen.new)
+    @board = board
+    @title_screen = title_screen
+    @turn = :white
+  end
+
+  def options
+    loop do
+      clear_screen
+      title_screen.display
+      process_action(get_chr, :title_mode)
+    end
+  end
+
+
+  def play
+
+    until won?
+      puts "CHESS"
+      begin
+        clear_screen
+        board.display(@turn)
+        process_action(get_chr, :board_mode)
+
+      rescue RuntimeError
+        puts "That spot has been clicked already. Enter another spot."
+        retry
+      end
+      #swap_turns
+    end
+    clear_screen
+    board.display(@turn)
+    "#{@turn.to_s} won!"
+    play_again
+  end
+
+  def play_again
+    puts "Would you like to play again?"
+    print '≽ '
+    reply = gets.chomp[0].downcase
+    if reply == 'y'
+      new_game = Game.new
+      new_game.play
+    else
+      puts "Oh OK that's cool. Thanks for playing I guess."
+    end
+  end
 
   def clear_screen
     puts "\e[H\e[2J"
@@ -33,20 +82,19 @@ class Game
     when 'q'
       exit        #maybe make that nicer later
     when 'r'
-      board.reveal_tile if mode == :board_mode
-    when 'f'
-      board.switch_flagged if mode == :board_mode
+       board.click(@turn) if mode == :board_mode
+       choose_option if mode == :title_mode
+    # when 'f'
+    #   board.switch_flagged if mode == :board_mode
     when 'o'
       self.options if mode == :board_mode
-    when 'e'
-      choose_option if mode == :title_mode
     end
   end
 
   def choose_option
     option = self.title_screen.current_option
     case option
-    when :start
+    when :start_new_game
       new_game = Game.new
       new_game.play
     when :save
@@ -59,6 +107,14 @@ class Game
     when :exit
       exit
     end
+  end
+
+  def won?
+    self.board.check_mate?(:black) || self.board.check_mate?(:white)
+  end
+
+  def swap_turns
+    @turn == :white ? @turn = :black : @turn = :white
   end
 
 end

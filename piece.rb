@@ -16,6 +16,10 @@ class Piece
   def moves
   end
 
+  def on_board?(pos)
+    pos[0].between?(0,7) && pos[1].between?(0,7)
+  end
+
   def move_into_check?(pos)
    test_board = self.board.dup
    test_board[self.pos] = nil
@@ -51,7 +55,7 @@ class SlidingPiece < Piece
     self.class.move_dirs.each do |delta|
 
       y, x = delta[0] + self.pos[0], delta[1] + self.pos[1]
-      next unless y.between?(0,7) && x.between?(0,7)
+      next unless on_board?([y, x])
 
       some_moves << [y,x]
       blocked = false
@@ -61,7 +65,7 @@ class SlidingPiece < Piece
         break unless self.board[some_moves.last].nil?
 
         y, x = delta[0] + some_moves.last[0], delta[1] + some_moves.last[1]
-        break unless y.between?(0,7) && x.between?(0,7)
+        break unless on_board?([y, x])
 
         some_moves << [y,x]
         blocked = false
@@ -76,7 +80,7 @@ class SteppingPiece < Piece
   def moves
     self.class.deltas.map do |delta|
       y, x = delta[0] + self.pos[0], delta[1] + self.pos[1]
-      [y,x] if y.between?(0,7) && x.between?(0,7)
+      [y,x] if on_board?([y, x])
     end.compact
   end
 end
@@ -97,7 +101,7 @@ end
 
 class Bishop < SlidingPiece
   def self.move_dirs
-    [ [1, 1], [1, -1], [-1, 1], [1, 1] ]
+    [ [1, 1], [1, -1], [-1, 1], [-1, -1] ]
   end
 end
 
@@ -127,18 +131,18 @@ class Pawn < Piece
   def moves     #ugly fix later
     moves = []
     y, x = self.pos[0] + COLOR_DIR[self.color], self.pos[1]
-    moves << [y, x] if y.between?(0,7)
+    moves << [y, x] if on_board?([y, x])
     if self.first_move
-       moves << [y + COLOR_DIR[self.color], x]
+      double_y = y + COLOR_DIR[self.color]
+       moves << [double_y, x] if on_board?([double_y, x])
     end
-
     straight_moves = moves.select { |move| board[move].nil? }
 
     moves = []
     x = self.pos[1] - 1
-    moves << [y,x] if !self.board[[y, x]].nil? && x.between?(0,7)
+    moves << [y,x] if on_board?([y, x]) && !self.board[[y, x]].nil?
     x = self.pos[1] + 1
-    moves << [y,x] if !self.board[[y, x]].nil? && x.between?(0,7)
+    moves << [y,x] if on_board?([y, x]) && !self.board[[y, x]].nil?
 
     diag_moves = moves.reject { |move| board[move].nil? }
 

@@ -4,23 +4,45 @@ require 'colorize'
 
 class Board
 
-  CHARS = { :King => 'K',
-            :Queen => 'Q',
-            :Bishop => 'B',
-            :Knight => 'H',
-            :Rook => 'R',
-            :Pawn => 'P' }
+  WHITE_CHARS = { :King => '♕',
+            :Queen => '♔',
+            :Bishop => '♗',
+            :Knight => '♘',
+            :Rook => '♖',
+            :Pawn => '♙' }
+
+  BLACK_CHARS = { :King => '♛',
+            :Queen => '♚',
+            :Bishop => '♝',
+            :Knight => '♞',
+            :Rook => '♜',
+            :Pawn => '♟' }
 
   COLORS = [:white, :black]
 
-  attr_reader :rows
+  attr_reader :rows, :cursor
 
   def initialize(cursor = Cursor.new)
     @rows = Array.new(8) { Array.new(8) }
     place_pieces
     @cursor = cursor
+    @bg_color = :light_black
+    @prev_pos = nil
   end
 
+  def click(turn)
+    pos = [cursor.row, cursor.col]
+    if @prev_pos.nil?
+      @prev_pos = pos unless self[pos].nil? || self[pos].color != turn
+    else
+      begin
+        move(@prev_pos, pos, turn)
+      rescue RuntimeError
+        @prev_pos = nil
+      end
+      @prev_pos = nil
+    end
+  end
 
   def opposite(color)
     color == COLORS[0] ? COLORS[1] : COLORS[0]
@@ -39,7 +61,6 @@ class Board
   end
 
   def in_check?(color)
-
     all_pieces(opposite(color)).any? do |piece|
       piece.moves.include?(king(color).pos)
     end
@@ -51,8 +72,9 @@ class Board
     end && in_check?(color)  #need to test
   end
 
-  def move(start, end_pos)
+  def move(start, end_pos, color = :white)      #just to save from errors
 
+    raise "Move your own piece, cheater!" unless self[start].color == color
     raise "No piece at that position." if self[start].nil?
     raise "Invalid move." unless self[start].moves.include?(end_pos)
     unless self[end_pos].nil?
@@ -84,8 +106,8 @@ class Board
     self.rows.flatten.compact.select { |piece| piece.color == color }
   end
 
-  def display
-    puts render
+  def display(turn)
+    puts render(turn)
   end
 
   protected
@@ -117,19 +139,67 @@ class Board
     end
   end
 
-  def render
-    str = ''
-    self.rows.each do |row|
-      row.each do |piece|
+  protected
+  def chars_array(turn)
+    chars_array = self.rows.map(&:dup)
+
+    8.times do |y|
+      chars_array[y].each_with_index do |piece, x|
         unless piece.nil?
-          str << CHARS[piece.class.to_s.to_sym].colorize(piece.color)
+          if piece.color == :white
+            char = WHITE_CHARS[piece.class.to_s.to_sym]
+          else
+            char = BLACK_CHARS[piece.class.to_s.to_sym]
+          end
+          char = char.colorize(piece.color)
+          char = char.colorize( :background => background_color_swap)
+          chars_array[y][x] = char
         else
-          str << ' '
+          chars_array[y][x] = ' '.colorize(:color => background_color_swap, :background => @bg_color)
         end
+      end
+      background_color_swap
+    end
+
+    y, x = cursor.row, cursor.col
+
+    current_piece = self[[y, x]] if @prev_pos.nil?
+    unless @prev_pos.nil?
+      py, px = @prev_pos[0], @prev_pos[1]
+      chars_array[py][px] = chars_array[py][px].colorize(:background => :cyan)
+    end
+
+    current_piece = self[@prev_pos] unless @prev_pos.nil?
+    unless current_piece.nil? || current_piece.color != turn
+      current_piece.valid_moves.each do |move|
+        move_char = chars_array[move[0]][move[1]]
+        move_char = move_char.colorize(:background => :green)
+        chars_array[move[0]][move[1]] = move_char
+      end
+    end
+
+    chars_array[y][x] = chars_array[y][x].colorize(:background => :cyan)
+
+    chars_array
+  end
+
+  def render(turn)
+    chars_array = self.chars_array(turn)
+
+    str = ''
+    chars_array.each do |row|
+      row.each do |char|
+        #str << ' '
+        str << char
       end
       str << "\n"
     end
     str
+  end
+
+  def background_color_swap
+    @bg_color == :light_white ? @bg_color = :light_black : @bg_color = :light_white
+    @bg_color
   end
 
 end

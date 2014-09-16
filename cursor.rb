@@ -4,7 +4,7 @@ class Cursor
 
   attr_reader :row, :col, :width, :height
 
-  def initialize(width = 9, height = 9)
+  def initialize(width = 8, height = 8)
     @width = width
     @height = height
     @row = 0
