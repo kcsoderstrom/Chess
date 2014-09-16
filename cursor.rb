@@ -11,6 +11,10 @@ class Cursor
     @col = 0
   end
 
+  def pos
+    [self.row, self.col]
+  end
+
   def left
     @col = (col - 1) % self.width
   end

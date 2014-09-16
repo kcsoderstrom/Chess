@@ -1,32 +1,20 @@
 require_relative 'piece' #might not need this wedk
 require_relative 'cursor'
+require_relative 'chars_array'
 require 'colorize'
 
 class Board
 
-  WHITE_CHARS = { :King => '♕',
-            :Queen => '♔',
-            :Bishop => '♗',
-            :Knight => '♘',
-            :Rook => '♖',
-            :Pawn => '♙' }
 
-  BLACK_CHARS = { :King => '♛',
-            :Queen => '♚',
-            :Bishop => '♝',
-            :Knight => '♞',
-            :Rook => '♜',
-            :Pawn => '♟' }
 
   COLORS = [:white, :black]
 
-  attr_reader :rows, :cursor
+  attr_reader :rows, :cursor, :prev_pos
 
   def initialize(cursor = Cursor.new)
     @rows = Array.new(8) { Array.new(8) }
     place_pieces
     @cursor = cursor
-    @bg_color = :light_black
     @prev_pos = nil
   end
 
@@ -146,80 +134,15 @@ class Board
     end
   end
 
-  public
-
-  def chars_array(turn)
-    chars_array = convert_to_chars
-
-    y, x = cursor.row, cursor.col
-
-    unless @prev_pos.nil?
-      current_piece = self[@prev_pos]
-      hold_highlight_on_selected_piece(chars_array)
-      highlight_available_moves(current_piece, chars_array, turn)
-    end
-
-    highlight_cursor(chars_array)
-    chars_array
-  end
-
-  def highlight_available_moves(current_piece, chars_array, turn)
-    unless current_piece.nil? || current_piece.color != turn
-      current_piece.valid_moves.each do |move|
-        move_char = chars_array[move[0]][move[1]]
-        move_char = move_char.colorize(:background => :green)
-        chars_array[move[0]][move[1]] = move_char
-      end
-    end
-  end
-
-  def hold_highlight_on_selected_piece(chars_array)
-    y, x = @prev_pos[0], @prev_pos[1]
-    chars_array[y][x] = chars_array[y][x].colorize(:background => :cyan)
-  end
-
-  def highlight_cursor(chars_array)
-    y, x = cursor.row, cursor.col
-    chars_array[y][x] = chars_array[y][x].colorize(:background => :cyan)
-  end
-
-  def convert_to_chars
-    chars_array = self.rows.map(&:dup)
-
-    8.times do |y|
-      chars_array[y].each_with_index do |piece, x|
-        unless piece.nil?
-          if piece.color == :white
-            char = WHITE_CHARS[piece.class.to_s.to_sym]
-          else
-            char = BLACK_CHARS[piece.class.to_s.to_sym]
-          end
-          char = char.colorize(piece.color)
-          char = char.colorize( :background => background_color_swap )
-          chars_array[y][x] = char
-        else
-          chars_array[y][x] = ' '.colorize(:background => background_color_swap)
-        end
-      end
-      background_color_swap
-    end
-    chars_array
-  end
-
   def render(turn)
-    chars_array = self.chars_array(turn)
+    characters_array = CharsArray.new(self, turn).rows
 
     str = ''
-    chars_array.each do |row|
+    characters_array.each do |row|
       row.each { |char| str << char }
       str << "\n"
     end
     str
-  end
-
-  def background_color_swap
-    @bg_color == :light_white ? @bg_color = :light_black : @bg_color = :light_white
-    @bg_color
   end
 
 end
