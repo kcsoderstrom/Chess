@@ -14,7 +14,6 @@ class Piece
   end
 
   def moves
-    [[0,1]]
   end
 
   def move_into_check?(pos)
@@ -25,7 +24,11 @@ class Piece
   end
 
   def valid_moves
-    moves.reject { |move| move_into_check?(move) }.select(&:legal?)
+    moves.select do |move|
+      legal?(move)
+    end.reject do |move|
+      move_into_check?(move)
+    end
   end
 
   def legal?(new_pos)
@@ -41,15 +44,105 @@ class Piece
 
 end
 
+
 class SlidingPiece < Piece
   def moves
-    #uses move_dirs
+    some_moves = []
+    self.class.move_dirs.each do |delta|
+
+      y, x = delta[0] + self.pos[0], delta[1] + self.pos[1]
+      next unless y.between?(0,7) && x.between?(0,7)
+
+      some_moves << [y,x]
+      blocked = false
+
+      until blocked == true
+        blocked = true
+        break unless self.board[some_moves.last].nil?
+
+        y, x = delta[0] + some_moves.last[0], delta[1] + some_moves.last[1]
+        break unless y.between?(0,7) && x.between?(0,7)
+
+        some_moves << [y,x]
+        blocked = false
+      end
+
+    end
+    some_moves
   end
 end
 
 class SteppingPiece < Piece
+  def moves
+    self.class.deltas.map do |delta|
+      y, x = delta[0] + self.pos[0], delta[1] + self.pos[1]
+      [y,x] if y.between?(0,7) && x.between?(0,7)
+    end.compact
+  end
+end
 
+class Knight < SteppingPiece
+  def self.deltas
+    [[1, 2], [1, -2], [-1, 2], [-1, -2],
+     [2, 1], [2, -1], [-2, 1], [-2, -1]]
+  end
 end
 
 class King < SteppingPiece
+  def self.deltas
+    [[1, 0], [-1, 0], [0, 1], [0, -1],
+     [1, 1], [-1, 1], [1, -1], [-1, -1]]
+  end
+end
+
+class Bishop < SlidingPiece
+  def self.move_dirs
+    [ [1, 1], [1, -1], [-1, 1], [1, 1] ]
+  end
+end
+
+class Rook < SlidingPiece
+  def self.move_dirs
+    [ [0, 1], [1, 0], [0, -1], [-1, 0] ]
+  end
+end
+
+class Queen < SlidingPiece
+  def self.move_dirs
+    [ [0, 1], [1, 0], [0, -1], [-1, 0],
+      [1, 1], [1, -1], [-1, 1], [-1, -1] ]
+  end
+end
+
+class Pawn < Piece
+
+  COLOR_DIR = { :black => 1, :white => -1 }
+  attr_accessor :first_move
+
+  def initialize(board = Board.new, color = :white, pos = [0, 0])
+    @first_move = true
+    super(board, color, pos)
+  end
+
+  def moves     #ugly fix later
+    moves = []
+    y, x = self.pos[0] + COLOR_DIR[self.color], self.pos[1]
+    moves << [y, x] if y.between?(0,7)
+    if self.first_move
+       moves << [y + COLOR_DIR[self.color], x]
+    end
+
+    straight_moves = moves.select { |move| board[move].nil? }
+
+    moves = []
+    x = self.pos[1] - 1
+    moves << [y,x] if !self.board[[y, x]].nil? && x.between?(0,7)
+    x = self.pos[1] + 1
+    moves << [y,x] if !self.board[[y, x]].nil? && x.between?(0,7)
+
+    diag_moves = moves.reject { |move| board[move].nil? }
+
+    straight_moves + diag_moves
+  end
+
 end
