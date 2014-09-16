@@ -3,31 +3,35 @@ require_relative 'cursor'
 
 class TitleScreen
 
-  attr_reader :options, :cursor
+  attr_reader :options, :cursor, :message_hash, :title
 
   def initialize(cursor = Cursor.new(1,5))
     @cursor = cursor
-    @options = [[:start_new_game], [:save], [:load], [:return], [:exit]]
+    @options = [[:start], [:save], [:load], [:return], [:exit]]
                   #it has to be this way for cursor
-                  #MAKE CONSTANT!!
-  end
-
-  def current_option
-    self.options[self.cursor.row][0]
+    @message_hash = { :start => "START NEW GAME",
+                      :save => "SAVE",
+                      :load => "LOAD SAVED GAME",
+                      :return => "RETURN TO GAME",
+                      :exit => "QUIT" }
   end
 
   def title
     "CHESS"
   end
 
+  def current_option
+    self.options[self.cursor.row][0]
+  end
+
   def render
-    str = title << "\n"
+    str = self.title << "\n\n"
     syms_arr = self.options.flatten
     syms_arr.each_with_index do |sym, i|
       if i == self.cursor.row
-        str << sym.to_s.colorize(:light_white)
+        str << message_hash[sym].colorize(:light_black)
       else
-        str << sym.to_s
+        str << message_hash[sym]
       end
       str << "\n"
     end

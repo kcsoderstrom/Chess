@@ -5,8 +5,6 @@ require 'colorize'
 
 class Board
 
-
-
   COLORS = [:white, :black]
 
   attr_reader :rows, :cursor, :prev_pos

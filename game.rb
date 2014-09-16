@@ -22,16 +22,14 @@ class Game
 
 
   def play
-
     until won?
-      puts "CHESS"
       begin
         clear_screen
         board.display(@turn)
         process_action(get_chr, :board_mode)
 
       rescue RuntimeError
-        puts "That spot has been clicked already. Enter another spot."
+        puts "Error. Try again."
         retry
       end
       #swap_turns
@@ -94,7 +92,7 @@ class Game
   def choose_option
     option = self.title_screen.current_option
     case option
-    when :start_new_game
+    when :start
       new_game = Game.new
       new_game.play
     when :save
