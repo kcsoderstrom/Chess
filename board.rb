@@ -98,7 +98,14 @@ class Board
 
   def dup
     duped = Board.new
-    duped.rows = @rows.map(&:dup)
+    8.times do |y|
+      rows[y].each_with_index do |piece, x|
+        duped[[y,x]] = nil
+        unless self[[y,x]].nil?
+          duped[[y,x]] = piece.class.new(duped,piece.color,[y, x])
+        end
+      end
+    end
     duped
   end
 
