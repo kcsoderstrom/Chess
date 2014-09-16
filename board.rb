@@ -30,4 +30,14 @@ class Board
     #might want to implement a .taken for self[end_pos]
   end
 
+  def dup
+    duped = Board.new
+    duped.rows = @rows.map(&:dup)
+    duped
+  end
+
+  protected
+
+  attr_writer :rows
+
 end
