@@ -14,7 +14,9 @@ module SaveLoad
     begin
       print "\t"
       file_name = gets.chomp
-      YAML::load(File.open("./save_files/#{file_name}")).play
+      load_game = YAML::load(File.open("./save_files/#{file_name}"))
+      load_game.board.clock.set_last_tick
+      load_game.play
     rescue Errno::ENOENT
       puts "File not found."
       retry

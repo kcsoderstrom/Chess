@@ -158,14 +158,18 @@ class Board
     characters_array = characters_array.convert_to_chars.highlight_squares.rows
     white_chars = CharsArray.new(self, turn).convert_taken_to_chars(:white)
     black_chars = CharsArray.new(self, turn).convert_taken_to_chars(:black)
+    white_chars.sort!
+    black_chars.sort!       #should probably sort the pieces really
 
     str = ''
-    str << white_chars.join << "\n"
+    str << white_chars.drop(8).join << "\n"
+    str << white_chars.take(8).join << "\n"
     characters_array.each do |row|
       row.each { |char| str << char }
       str << "\n"
     end
-    str << black_chars.join << "\n"
+    str << black_chars.take(8).join << "\n"
+    str << black_chars.drop(8).join << "\n"
 
     str << "White Current Time: #{clock.convert_times[0]} \t" <<
            "White Total Time: #{clock.convert_times[1]}\n" <<

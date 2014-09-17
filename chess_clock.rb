@@ -34,4 +34,8 @@ class ChessClock
       Time.at(@black_time - 19*60*60).strftime("%H:%M:%S") ]
   end
 
+  def set_last_tick
+    @last_tick = Time.now
+  end
+
 end
