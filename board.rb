@@ -93,6 +93,8 @@ class Board
     if sym == :r
       @mode = :normal
       self.click(turn)
+    elsif sym == :o
+      return :title_mode
     else
       if @mode == :upgrade
         upgrade_cursor.cursor_move(sym)
@@ -101,6 +103,7 @@ class Board
         cursor.cursor_move(sym)
       end
     end
+    :board_mode
   end
 
   def dup

@@ -1,10 +1,11 @@
 require 'yaml'
 require_relative 'board'
 require_relative 'title_screen'
-
+require_relative 'cursor_screen'
 
 class Game
 
+  include CursorScreen
 
   attr_reader :title_screen, :board
   attr_writer :board
@@ -15,7 +16,7 @@ class Game
     @turn = :white
   end
 
-  def options       #timer should be paused on options screen
+  def options       #TODO: timer should be paused on options screen
     loop do
       clear_screen
       title_screen.display
@@ -63,9 +64,7 @@ class Game
     end
   end
 
-
-
-  def won?
+  def won?    #possibly belongs in board class
     self.board.check_mate?(:black) || self.board.check_mate?(:white)
   end
 
@@ -74,37 +73,17 @@ class Game
     @turn == :white ? @turn = :black : @turn = :white
   end
 
-  # Cursor, clearing the screen, making the title screen work, etc.
-
-  def clear_screen
-    puts "\e[H\e[2J"
-  end
-
-  def get_chr
-    begin
-      system("stty raw -echo")
-      str = STDIN.getc
-    ensure
-      system("stty -raw echo")
-    end
-  end
-
   def process_action(chr, mode)
     mode_hash = {:board_mode => self.board,
                        :title_mode => self.title_screen }
-    unless chr == 'o'
-      mode_hash[mode].cursor_move(chr.to_sym, @turn)
+    old_mode = mode
+    new_mode = mode_hash[mode].cursor_move(chr.to_sym, @turn)
+
+    unless new_mode == old_mode   # don't restart if the mode didn't change
+      mode = new_mode
+      self.play if mode == :board_mode
+      self.options if mode == :title_mode
     end
-
-    # if chr == 'r'
-      # board.cursor_move(:r, @turn) if mode == :board_mode
-
-    if chr == 'o'
-      self.options if mode == :board_mode
-    end
-
   end
-
-
 
 end

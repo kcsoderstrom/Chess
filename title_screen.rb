@@ -56,8 +56,7 @@ class TitleScreen
   end
 
   def choose_option
-    option = self.current_option
-    case option
+    case current_option
     when :start
       new_game = Game.new
       new_game.play
@@ -66,10 +65,12 @@ class TitleScreen
     when :load
       load
     when :return
-      self.play
+      return :board_mode
     when :exit
       exit
     end
+
+    :title_mode
   end
 
 end
