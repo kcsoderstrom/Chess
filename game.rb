@@ -20,18 +20,20 @@ class Game
     end
   end
 
-
   def play
-    until won?
-      begin
-        clear_screen
-        board.display(@turn)
-        process_action(get_chr, :board_mode)
+    # next_move? = false
+    # until next_move?
+      until won?
+        begin
+          clear_screen
+          board.display(@turn)
+          process_action(get_chr, :board_mode)
 
-      rescue RuntimeError
-        puts "Error. Try again."
-        retry
-      end
+        rescue RuntimeError
+          puts "Error. Try again."
+          retry
+        end
+      # end
       #swap_turns
     end
     clear_screen
@@ -51,6 +53,16 @@ class Game
       puts "Oh OK that's cool. Thanks for playing I guess."
     end
   end
+
+  def won?
+    self.board.check_mate?(:black) || self.board.check_mate?(:white)
+  end
+
+  def swap_turns
+    @turn == :white ? @turn = :black : @turn = :white
+  end
+
+  # Cursor, clearing the screen, making the title screen work, etc.
 
   def clear_screen
     puts "\e[H\e[2J"
@@ -82,8 +94,6 @@ class Game
     when 'r'
        board.click(@turn) if mode == :board_mode
        choose_option if mode == :title_mode
-    # when 'f'
-    #   board.switch_flagged if mode == :board_mode
     when 'o'
       self.options if mode == :board_mode
     end
@@ -107,12 +117,5 @@ class Game
     end
   end
 
-  def won?
-    self.board.check_mate?(:black) || self.board.check_mate?(:white)
-  end
-
-  def swap_turns
-    @turn == :white ? @turn = :black : @turn = :white
-  end
 
 end

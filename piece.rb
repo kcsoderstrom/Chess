@@ -2,9 +2,7 @@ require_relative 'board'
 
 class Piece
 
-  attr_accessor :pos
-
-  attr_reader :board, :color
+  attr_reader :board, :color, :pos
 
   def initialize(board = Board.new, color = :white, pos = [0, 0])
     @color = color
@@ -14,6 +12,10 @@ class Piece
   end
 
   def moves
+  end
+
+  def update_pos(new_pos)
+    self.pos = new_pos
   end
 
   def on_board?(pos)
@@ -44,6 +46,9 @@ class Piece
     end
     true
   end
+
+  protected
+  attr_writer :pos
 
 end
 

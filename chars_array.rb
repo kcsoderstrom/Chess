@@ -1,6 +1,9 @@
 require_relative 'board'
+require_relative 'plane_like'
 
 class CharsArray
+
+  include PlaneLike
 
   WHITE_CHARS = { :King => '♕',
             :Queen => '♔',
@@ -16,7 +19,9 @@ class CharsArray
             :Rook => '♜',
             :Pawn => '♟' }
 
-  attr_accessor :board, :turn, :rows
+  BG_COLORS = [:light_white, :light_black]
+
+  attr_accessor :board, :turn
 
   def initialize(board, turn)
     @rows = Array.new(8) { Array.new(8) }
@@ -25,14 +30,6 @@ class CharsArray
     @bg_color = :light_black
     convert_to_chars
     highlight_squares
-  end
-
-  def [](pos)
-    self.rows[pos[0]][pos[1]]
-  end
-
-  def []=(pos, char)
-    self.rows[pos[0]][pos[1]] = char
   end
 
   def highlight_squares
@@ -86,9 +83,7 @@ class CharsArray
   end
 
   def background_color_swap
-    color1 = :light_white     #make def constant
-    color2 = :light_black
-    @bg_color == color1 ? @bg_color = color2 : @bg_color = color1
+    @bg_color =  ( BG_COLORS - [@bg_color] )[0] # hacky ew
     @bg_color
   end
 end

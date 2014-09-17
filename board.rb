@@ -1,13 +1,16 @@
 require_relative 'piece' #might not need this wedk
 require_relative 'cursor'
 require_relative 'chars_array'
+require_relative 'plane_like'
 require 'colorize'
 
 class Board
 
+  include PlaneLike
+
   COLORS = [:white, :black]
 
-  attr_reader :rows, :cursor, :prev_pos
+  attr_reader :cursor, :prev_pos
 
   def initialize(cursor = Cursor.new)
     @rows = Array.new(8) { Array.new(8) }
@@ -34,14 +37,6 @@ class Board
     color == COLORS[0] ? COLORS[1] : COLORS[0]
   end
 
-  def [](pos)
-    self.rows[pos[0]][pos[1]]
-  end
-
-  def []=(pos, piece)
-    self.rows[pos[0]][pos[1]] = piece
-  end
-
   def king(color)
     king = all_pieces(color).select { |piece| piece.is_a?(King) }[0]
   end
@@ -55,11 +50,12 @@ class Board
   def check_mate?(color)
     all_pieces(color).all? do |piece|
       piece.valid_moves.empty?
-    end && in_check?(color)  #need to test
+    end && in_check?(color)
   end
 
   def move(start, end_pos, color)
 
+    #build these errors with names
     raise "Move your own piece, cheater!" unless self[start].color == color
     raise "No piece at that position." if self[start].nil?
     raise "Invalid move." unless self[start].moves.include?(end_pos)
@@ -71,15 +67,12 @@ class Board
     end
 
     self[start], self[end_pos] = nil, self[start]
-    update_pos(self[end_pos], end_pos)      #this seems stupid
-    if self[end_pos].is_a?(Pawn)
-      self[end_pos].first_move = false
-    end
-    #might want to implement a .taken for self[end_pos]
-  end
 
-  def update_pos(piece, new_pos)
-    piece.pos = new_pos           #that shouldn't be doable make some privates
+    moved_piece = self[end_pos]
+    moved_piece.update_pos(end_pos)      #this seems stupid
+    moved_piece.first_move = false if moved_piece.is_a?(Pawn)
+
+    #might want to implement a .taken for self[end_pos]
   end
 
   def dup
@@ -103,10 +96,8 @@ class Board
     puts render(turn)
   end
 
-  protected
-  attr_writer :rows
-
   private
+
   def place_pieces
     self[[0, 0]] = Rook.new(self, :black, [0, 0])
     self[[0, 7]] = Rook.new(self, :black, [0, 7])
