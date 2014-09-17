@@ -30,6 +30,12 @@ class CharsArray
     @bg_color = :light_black
   end
 
+  def characters_array
+    convert_to_chars
+    highlight_squares
+    self.rows
+  end
+
   def highlight_squares
     unless self.board.prev_pos.nil?
       selected_piece = self.board[self.board.prev_pos]
@@ -101,4 +107,14 @@ class CharsArray
     @bg_color =  ( BG_COLORS - [@bg_color] )[0] # hacky ew
     @bg_color
   end
+
+  def upgrade_char
+    piece_index = board.upgrade_cursor.col
+    color = :white  #get that from cursor
+    char_hash = (color == :white ? WHITE_CHARS : BLACK_CHARS )
+    piece_types = char_hash.keys
+
+    char_hash[ piece_types[piece_index] ]
+  end
+
 end

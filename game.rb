@@ -11,10 +11,10 @@ class Game
   def initialize(board = Board.new, title_screen = TitleScreen.new)
     @board = board
     @title_screen = title_screen
-    @turn = :white  #because it swaps at the start. maybe fix.
+    @turn = :white
   end
 
-  def options
+  def options       #timer should be paused on options screen
     loop do
       clear_screen
       title_screen.display
@@ -84,26 +84,19 @@ class Game
 
   def process_action(chr, mode)
     mode_hash = {:board_mode => self.board,
-                  :title_mode => self.title_screen}
-    case chr
-    when 'w'
-      mode_hash[mode].cursor.up
-    when 'a'
-      mode_hash[mode].cursor.left
-    when 's'
-      mode_hash[mode].cursor.down
-    when 'd'
-      mode_hash[mode].cursor.right
-    when 'q'
-      exit        #maybe make that nicer later
-    when 'r'
-       board.click(@turn) if mode == :board_mode
-       choose_option if mode == :title_mode
-    when 'o'
+                       :title_mode => self.title_screen }
+    unless chr == 'o' || chr == 'r'
+      mode_hash[mode].cursor_move(chr.to_sym, @turn)
+    end
+
+    if chr == 'r'
+      board.cursor_move(:r, @turn) if mode == :board_mode
+      choose_option if mode == :title_mode
+    elsif chr == 'o'
       self.options if mode == :board_mode
     end
-  end
 
+  end
   def choose_option
     option = self.title_screen.current_option
     case option
@@ -120,8 +113,5 @@ class Game
       exit
     end
   end
-
-
-
 
 end

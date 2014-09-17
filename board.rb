@@ -11,24 +11,28 @@ class Board
   include PlaneLike
 
   COLORS = [:white, :black]
+  UPGRADES = [ :Queen, :Bishop, :Knight, :Rook ]
 
-  attr_reader :cursor, :prev_pos, :clock
+  attr_reader :cursor, :prev_pos, :clock, :upgrade_cursor
   attr_accessor :end_of_turn, :black_taken_pieces,
-              :white_taken_pieces
+              :white_taken_pieces, :mode
 
   def initialize(cursor = Cursor.new)
     @rows = Array.new(8) { Array.new(8) }
     place_pieces
     @cursor = cursor
+    @upgrade_cursor = Cursor.new(1, 4)    # 4 is number of piece types
     @prev_pos = nil
     @end_of_turn = false
     @clock = ChessClock.new
     @white_taken_pieces = []
     @black_taken_pieces = []
+    @mode = :normal
   end
 
   def click(turn)
-    pos = [cursor.row, cursor.col]
+    pos = cursor.pos
+
     if self.prev_pos.nil?
       self.prev_pos = pos unless self[pos].nil? || self[pos].color != turn
     else
@@ -92,8 +96,35 @@ class Board
     moved_piece.update_pos(end_pos)      #this seems stupid
     if moved_piece.is_a?(Pawn)
       moved_piece.first_move = false
-      if moved_piece.at_end?
-        self[end_pos] = Queen.new(self, moved_piece.color, end_pos)
+      @mode = :upgrade if moved_piece.at_end?
+    end
+  end
+
+  def scroll_upgrade(pos)
+    piece_index = self.upgrade_cursor.row % UPGRADES.count    #why row????
+    case UPGRADES[piece_index]
+    when :Queen
+      self[pos] = Queen.new(self, self[pos].color, pos)
+    when :Bishop
+      self[pos] = Bishop.new(self, self[pos].color, pos)
+    when :Knight
+      self[pos] = Knight.new(self, self[pos].color, pos)
+    when :Rook
+      self[pos] = Rook.new(self, self[pos].color, pos)
+    end
+  end
+
+  def cursor_move(sym,turn)
+
+    if sym == :r
+      @mode = :normal
+      self.click(turn)
+    else
+      if @mode == :upgrade
+        upgrade_cursor.cursor_move(sym)
+        scroll_upgrade(cursor.pos)
+      else
+        cursor.cursor_move(sym)
       end
     end
   end
@@ -154,8 +185,7 @@ class Board
   end
 
   def render(turn)
-    characters_array = CharsArray.new(self, turn)
-    characters_array = characters_array.convert_to_chars.highlight_squares.rows
+    characters_array = CharsArray.new(self, turn).characters_array
     white_chars = CharsArray.new(self, turn).convert_taken_to_chars(:white)
     black_chars = CharsArray.new(self, turn).convert_taken_to_chars(:black)
     white_chars.sort!

@@ -20,6 +20,10 @@ class TitleScreen
     "CHESS"
   end
 
+  def cursor_move(sym, turn)
+    cursor.cursor_move(sym)
+  end
+
   def current_option
     self.options[self.cursor.row][0]
   end

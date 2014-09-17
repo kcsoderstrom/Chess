@@ -35,4 +35,19 @@ class Cursor
     [self.row, self.col]
   end
 
+  def cursor_move(sym)
+    case sym
+    when :w
+      up
+    when :a
+      left
+    when :s
+      down
+    when :d
+      right
+    when :q
+      exit        #maybe make that nicer later
+    end
+  end
+
 end
