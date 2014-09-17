@@ -23,15 +23,27 @@ class Game
   end
 
   def play
+
     until won?
       board.clock.change_time(@turn)
       self.board.end_of_turn = false
-
       until self.board.end_of_turn
         play_turn
       end
       swap_turns
     end
+
+    end_game
+  end
+
+  def play_turn
+    clear_screen
+    board.display(@turn)
+    process_action(get_chr, :board_mode)
+    board.clock.tick(@turn)
+  end
+
+  def end_game
     clear_screen
     board.display(@turn)
     puts "#{@turn.to_s.capitalize} won!"
@@ -50,12 +62,7 @@ class Game
     end
   end
 
-  def play_turn
-    clear_screen
-    board.display(@turn)
-    process_action(get_chr, :board_mode)
-    board.clock.tick(@turn)
-  end
+
 
   def won?
     self.board.check_mate?(:black) || self.board.check_mate?(:white)
