@@ -97,6 +97,7 @@ class Game
     end
 
   end
+
   def choose_option
     option = self.title_screen.current_option
     case option
