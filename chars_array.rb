@@ -5,15 +5,15 @@ class CharsArray
 
   include PlaneLike
 
-  WHITE_CHARS = { :King => '♕',
-            :Queen => '♔',
+  WHITE_CHARS = { :King => '♔',
+            :Queen => '♕',
             :Bishop => '♗',
             :Knight => '♘',
             :Rook => '♖',
             :Pawn => '♙' }
 
-  BLACK_CHARS = { :King => '♛',
-            :Queen => '♚',
+  BLACK_CHARS = { :King => '♚',
+            :Queen => '♛',
             :Bishop => '♝',
             :Knight => '♞',
             :Rook => '♜',
