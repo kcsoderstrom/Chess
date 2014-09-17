@@ -1,8 +1,10 @@
 require 'yaml'
 require_relative 'board'
 require_relative 'title_screen'
+require_relative 'save_load'
 
 class Game
+  include SaveLoad
 
   attr_reader :title_screen, :board
 
@@ -109,16 +111,17 @@ class Game
       new_game = Game.new
       new_game.play
     when :save
-      save_data = self.to_yaml
-      File.open('./ok.txt', 'w') { |file| file.puts(save_data) }
+      save
     when :load
-      YAML::load(File.open('./ok.txt')).play
+      load
     when :return
       self.play
     when :exit
       exit
     end
   end
+
+
 
 
 end
