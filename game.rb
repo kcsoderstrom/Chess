@@ -1,14 +1,15 @@
 require 'yaml'
 require_relative 'board'
 require_relative 'title_screen'
-require_relative 'save_load'
+
 
 class Game
-  include SaveLoad
+
 
   attr_reader :title_screen, :board
+  attr_writer :board
 
-  def initialize(board = Board.new, title_screen = TitleScreen.new)
+  def initialize(board = Board.new, title_screen = TitleScreen.new(board))
     @board = board
     @title_screen = title_screen
     @turn = :white
@@ -91,34 +92,19 @@ class Game
   def process_action(chr, mode)
     mode_hash = {:board_mode => self.board,
                        :title_mode => self.title_screen }
-    unless chr == 'o' || chr == 'r'
+    unless chr == 'o'
       mode_hash[mode].cursor_move(chr.to_sym, @turn)
     end
 
-    if chr == 'r'
-      board.cursor_move(:r, @turn) if mode == :board_mode
-      choose_option if mode == :title_mode
-    elsif chr == 'o'
+    # if chr == 'r'
+      # board.cursor_move(:r, @turn) if mode == :board_mode
+
+    if chr == 'o'
       self.options if mode == :board_mode
     end
 
   end
 
-  def choose_option
-    option = self.title_screen.current_option
-    case option
-    when :start
-      new_game = Game.new
-      new_game.play
-    when :save
-      save
-    when :load
-      load
-    when :return
-      self.play
-    when :exit
-      exit
-    end
-  end
+
 
 end

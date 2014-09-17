@@ -1,11 +1,16 @@
 require 'colorize'
 require_relative 'cursor'
+require_relative 'save_load'
+require_relative 'board'
+require_relative 'game'
 
 class TitleScreen
 
-  attr_reader :options, :cursor, :message_hash, :title
+  include SaveLoad
+  attr_reader :options, :cursor, :message_hash, :title, :board
 
-  def initialize(cursor = Cursor.new(1,5))
+  def initialize(board, cursor = Cursor.new(1,5))
+    @board = board
     @cursor = cursor
     @options = [ :start, :save, :load, :return, :exit ]
                   #it has to be this way for cursor
@@ -21,7 +26,11 @@ class TitleScreen
   end
 
   def cursor_move(sym, turn)
-    cursor.cursor_move(sym)
+    unless sym == :r
+      cursor.cursor_move(sym)
+    else
+      choose_option
+    end
   end
 
   def current_option
@@ -44,6 +53,23 @@ class TitleScreen
 
   def display
     puts render
+  end
+
+  def choose_option
+    option = self.current_option
+    case option
+    when :start
+      new_game = Game.new
+      new_game.play
+    when :save
+      save
+    when :load
+      load
+    when :return
+      self.play
+    when :exit
+      exit
+    end
   end
 
 end

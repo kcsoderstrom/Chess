@@ -1,3 +1,6 @@
+require_relative 'board'
+require_relative 'game'
+
 module SaveLoad
 
   def load
@@ -14,8 +17,9 @@ module SaveLoad
     begin
       print "\t"
       file_name = gets.chomp
-      load_game = YAML::load(File.open("./save_files/#{file_name}"))
-      load_game.board.clock.set_last_tick
+      load_board = YAML::load(File.open("./save_files/#{file_name}"))
+      load_board.clock.set_last_tick    # resets the clock
+      load_game = Game.new(load_board)
       load_game.play
     rescue Errno::ENOENT
       puts "File not found."
@@ -26,7 +30,7 @@ module SaveLoad
   end
 
   def save
-    save_data = self.to_yaml
+    save_data = self.board.to_yaml
     puts ''
     begin
       print "Save as: "
