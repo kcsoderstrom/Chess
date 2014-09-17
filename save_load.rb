@@ -28,9 +28,13 @@ module SaveLoad
   def save
     save_data = self.to_yaml
     puts ''
-    print "Save as: "
-    file_name = gets.chomp
-    File.open("./save_files/#{file_name}", 'w') {|file| file.puts(save_data)}
+    begin
+      print "Save as: "
+      file_name = gets.chomp
+      File.open("./save_files/#{file_name}", 'w') {|file| file.puts(save_data)}
+    rescue Errno::EISDIR
+      puts "Ok, return to menu"
+    end
   end
 
 end

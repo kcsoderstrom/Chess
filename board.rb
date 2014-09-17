@@ -5,6 +5,7 @@ require_relative 'chars_array'
 require_relative 'plane_like'
 require_relative 'chess_clock'
 require_relative 'chess_errors'
+require_relative 'symbol'
 require 'colorize'
 
 class Board
@@ -16,7 +17,7 @@ class Board
   UPGRADES = [ :Queen, :Bishop, :Knight, :Rook ]
 
   attr_reader :cursor, :prev_pos, :clock, :upgrade_cursor
-  attr_accessor :end_of_turn, :takens, :mode
+  attr_accessor :end_of_turn, :takens
 
   def initialize
     @rows = Array.new(8) { Array.new(8) }
@@ -39,7 +40,7 @@ class Board
         move(self.prev_pos, pos, turn)
         self.end_of_turn = true
       rescue ArgumentError
-        self.prev_pos = nil
+        self.prev_pos = nil   # clicked in a bad spot so resets
       end
       self.prev_pos = nil
     end
@@ -65,43 +66,30 @@ class Board
     end && in_check?(color)
   end
 
-
-
   def move(start, end_pos, color)
-
     raise_move_errors(start, end_pos, color)
 
     taken_piece = self[end_pos]
     self[start], self[end_pos] = nil, self[start]
 
     unless taken_piece.nil?
-      (taken_piece.color == :white ? takens[0] : takens[1])<< taken_piece
+      (taken_piece.color == :white ? takens[0] : takens[1]) << taken_piece
     end
 
     moved_piece = self[end_pos]
     moved_piece.update_pos(end_pos)      #this seems stupid
-    if moved_piece.is_a?(Pawn)
-      moved_piece.first_move = false
-      @mode = :upgrade if moved_piece.at_end?
-    end
+    moved_piece.first_move = false
+
+    @mode = :upgrade if moved_piece.at_end? if moved_piece.is_a?(Pawn)
   end
 
   def scroll_upgrade(pos)
     piece_index = self.upgrade_cursor.col
-    case UPGRADES[piece_index]
-    when :Queen
-      self[pos] = Queen.new(self, self[pos].color, pos)
-    when :Bishop
-      self[pos] = Bishop.new(self, self[pos].color, pos)
-    when :Knight
-      self[pos] = Knight.new(self, self[pos].color, pos)
-    when :Rook
-      self[pos] = Rook.new(self, self[pos].color, pos)
-    end
+    piece_type = UPGRADES[piece_index].convert_to_class
+    self[pos] = piece_type.new(self, self[pos].color, pos)
   end
 
   def cursor_move(sym,turn)
-
     if sym == :r
       @mode = :normal
       self.click(turn)
@@ -140,7 +128,7 @@ class Board
   attr_writer :prev_pos
 
   private
-
+  attr_accessor :mode
   def taken_pieces(color)
     color == :white ? takens[0] : takens[1]
   end

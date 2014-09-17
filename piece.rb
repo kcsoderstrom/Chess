@@ -5,13 +5,14 @@ class Piece
 
   include ChessErrors
   attr_reader :board, :color, :pos
+  attr_accessor :first_move
 
   def initialize(board = Board.new, color = :white, pos = [0, 0])
     @color = color
     @pos = pos
     @board = board
     @board[pos] = self
-
+    @first_move = true
   end
 
   def moves
@@ -128,11 +129,9 @@ end
 class Pawn < Piece
 
   COLOR_DIR = { :black => 1, :white => -1 }
-  attr_accessor :first_move
   attr_reader :delta
 
   def initialize(board = Board.new, color = :white, pos = [0, 0])
-    @first_move = true
     super(board, color, pos)
     @delta = COLOR_DIR[self.color]
   end
