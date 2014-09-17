@@ -7,7 +7,7 @@ class TitleScreen
 
   def initialize(cursor = Cursor.new(1,5))
     @cursor = cursor
-    @options = [[:start], [:save], [:load], [:return], [:exit]]
+    @options = [ :start, :save, :load, :return, :exit ]
                   #it has to be this way for cursor
     @message_hash = { :start => "START NEW GAME",
                       :save => "SAVE",
@@ -25,7 +25,7 @@ class TitleScreen
   end
 
   def current_option
-    self.options[self.cursor.row][0]
+    self.options[self.cursor.row]
   end
 
   def render
