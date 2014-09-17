@@ -66,7 +66,7 @@ class CharsArray
   end
 
   def convert_taken_to_chars(color)
-    taken_array = ( color == :white ? board.white_taken_pieces : board.black_taken_pieces)
+    taken_array = ( color == :white ? board.white_takens : board.black_takens)
     num_pieces = taken_array.count
     self.rows = []
     color = taken_array[0].color unless taken_array.empty?

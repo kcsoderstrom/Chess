@@ -14,19 +14,19 @@ class Board
   UPGRADES = [ :Queen, :Bishop, :Knight, :Rook ]
 
   attr_reader :cursor, :prev_pos, :clock, :upgrade_cursor
-  attr_accessor :end_of_turn, :black_taken_pieces,
-              :white_taken_pieces, :mode
+  attr_accessor :end_of_turn, :black_takens,
+              :white_takens, :mode
 
   def initialize(cursor = Cursor.new)
     @rows = Array.new(8) { Array.new(8) }
     place_pieces
     @cursor = cursor
-    @upgrade_cursor = Cursor.new(1, 4)    # 4 is number of piece types
+    @upgrade_cursor = Cursor.new(4, 1)    # 4 is number of piece types
     @prev_pos = nil
     @end_of_turn = false
     @clock = ChessClock.new
-    @white_taken_pieces = []
-    @black_taken_pieces = []
+    @white_takens = []
+    @black_takens = []
     @mode = :normal
   end
 
@@ -88,7 +88,7 @@ class Board
     self[start], self[end_pos] = nil, self[start]
 
     unless taken_piece.nil?
-      taken_pieces = ( taken_piece.color == :white ? white_taken_pieces : black_taken_pieces )
+      taken_pieces = ( taken_piece.color == :white ? white_takens : black_takens )
       taken_pieces << taken_piece
     end
 
@@ -101,7 +101,7 @@ class Board
   end
 
   def scroll_upgrade(pos)
-    piece_index = self.upgrade_cursor.row % UPGRADES.count    #why row????
+    piece_index = self.upgrade_cursor.col
     case UPGRADES[piece_index]
     when :Queen
       self[pos] = Queen.new(self, self[pos].color, pos)
@@ -156,7 +156,7 @@ class Board
   private
 
   def taken_pieces(color)
-    color == :white ? @white_taken_pieces : @black_taken_pieces
+    color == :white ? @white_takens : @black_takens
   end
 
   def place_pieces
