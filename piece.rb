@@ -37,7 +37,6 @@ class Piece
 
   def legal?(new_pos)
     test_board = self.board.dup
-    test_board[self.pos] = self.class.new(test_board, self.color, self.pos)
     begin
       test_board.move(self.pos, new_pos, self.color)
     rescue RuntimeError
@@ -122,29 +121,24 @@ class Pawn < Piece
 
   COLOR_DIR = { :black => 1, :white => -1 }
   attr_accessor :first_move
+  attr_reader :delta
 
   def initialize(board = Board.new, color = :white, pos = [0, 0])
     @first_move = true
     super(board, color, pos)
+    @delta = COLOR_DIR[self.color]
   end
 
-  def moves     #ugly fix later
+  def moves     # still kind of ugly
     moves = []
-    y, x = self.pos[0] + COLOR_DIR[self.color], self.pos[1]
+    y, x = self.pos[0] + delta, self.pos[1]
     moves << [y, x] if on_board?([y, x])
-    if self.first_move
-      double_y = y + COLOR_DIR[self.color]
-       moves << [double_y, x] if on_board?([double_y, x])
-    end
+    moves << [y + delta, x] if on_board?([y + delta, x]) && self.first_move
     straight_moves = moves.select { |move| board[move].nil? }
 
-    moves = []
-    x = self.pos[1] - 1
-    moves << [y,x] if on_board?([y, x]) && !self.board[[y, x]].nil?
-    x = self.pos[1] + 1
-    moves << [y,x] if on_board?([y, x]) && !self.board[[y, x]].nil?
-
-    diag_moves = moves.reject { |move| board[move].nil? }
+    diag_moves = [ [y, x - 1], [y, x + 1] ]
+    diag_moves.select! { |pos| on_board?(pos) && !self.board[pos].nil? }
+    diag_moves.reject! { |pos| board[pos].nil? }
 
     straight_moves + diag_moves
   end
