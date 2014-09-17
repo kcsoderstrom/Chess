@@ -28,8 +28,6 @@ class CharsArray
     @board = board
     @turn = turn
     @bg_color = :light_black
-    convert_to_chars
-    highlight_squares
   end
 
   def highlight_squares
@@ -40,6 +38,7 @@ class CharsArray
     end
 
     highlight_cursor
+    self
   end
 
   def highlight_available_moves(selected_piece)
@@ -60,8 +59,22 @@ class CharsArray
     self[pos] = self[pos].colorize(:background => :cyan)
   end
 
+  def convert_taken_to_chars(color)
+    taken_array = ( color == :white ? board.white_taken_pieces : board.black_taken_pieces)
+    num_pieces = taken_array.count
+    self.rows = []
+    color = taken_array[0].color unless taken_array.empty?
+    char_hash = (color == :white ? WHITE_CHARS : BLACK_CHARS)
+
+    num_pieces.times do |i|
+      piece = taken_array[i]
+      self.rows << char_hash[piece.class.to_s.to_sym].colorize(color)
+    end
+    self.rows
+  end
+
   def convert_to_chars
-    self.rows = board.rows.map(&:dup)
+    self.rows = Array.new (8) { Array.new (8) }
 
     8.times do |y|
       board.rows[y].each_with_index do |piece, x|
@@ -78,8 +91,10 @@ class CharsArray
           self.rows[y][x] = ' '.colorize(:background => background_color_swap)
         end
       end
+
       background_color_swap
     end
+    self
   end
 
   def background_color_swap

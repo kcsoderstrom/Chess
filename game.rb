@@ -9,7 +9,7 @@ class Game
   def initialize(board = Board.new, title_screen = TitleScreen.new)
     @board = board
     @title_screen = title_screen
-    @turn = :white
+    @turn = :white  #because it swaps at the start. maybe fix.
   end
 
   def options
@@ -21,24 +21,26 @@ class Game
   end
 
   def play
-    # next_move? = false
-    # until next_move?
-      until won?
+    until won?
+      board.clock.change_time(@turn)
+      self.board.end_of_turn = false
+
+      until self.board.end_of_turn
         begin
           clear_screen
           board.display(@turn)
           process_action(get_chr, :board_mode)
-
+          board.clock.tick(@turn)
         rescue RuntimeError
           puts "Error. Try again."
           retry
         end
-      # end
-      #swap_turns
+      end
+      swap_turns
     end
     clear_screen
     board.display(@turn)
-    "#{@turn.to_s} won!"
+    puts "#{@turn.to_s.capitalize} won!"
     play_again
   end
 
@@ -59,6 +61,7 @@ class Game
   end
 
   def swap_turns
+    p @turn
     @turn == :white ? @turn = :black : @turn = :white
   end
 

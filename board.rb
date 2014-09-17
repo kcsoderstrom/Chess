@@ -1,7 +1,9 @@
+require_relative "game"
 require_relative 'piece' #might not need this wedk
 require_relative 'cursor'
 require_relative 'chars_array'
 require_relative 'plane_like'
+require_relative 'chess_clock'
 require 'colorize'
 
 class Board
@@ -10,26 +12,33 @@ class Board
 
   COLORS = [:white, :black]
 
-  attr_reader :cursor, :prev_pos
+  attr_reader :cursor, :prev_pos, :clock
+  attr_accessor :end_of_turn, :black_taken_pieces,
+              :white_taken_pieces
 
   def initialize(cursor = Cursor.new)
     @rows = Array.new(8) { Array.new(8) }
     place_pieces
     @cursor = cursor
     @prev_pos = nil
+    @end_of_turn = false
+    @clock = ChessClock.new
+    @white_taken_pieces = []
+    @black_taken_pieces = []
   end
 
   def click(turn)
     pos = [cursor.row, cursor.col]
-    if @prev_pos.nil?
-      @prev_pos = pos unless self[pos].nil? || self[pos].color != turn
+    if self.prev_pos.nil?
+      self.prev_pos = pos unless self[pos].nil? || self[pos].color != turn
     else
       begin
-        move(@prev_pos, pos, turn)
+        move(self.prev_pos, pos, turn)
+        self.end_of_turn = true
       rescue RuntimeError
-        @prev_pos = nil
+        self.prev_pos = nil
       end
-      @prev_pos = nil
+      self.prev_pos = nil
     end
   end
 
@@ -53,9 +62,8 @@ class Board
     end && in_check?(color)
   end
 
-  def move(start, end_pos, color)
-
-    #build these errors with names
+  def raise_move_errors(start, end_pos, color)
+        #build these errors with names
     raise "Move your own piece, cheater!" unless self[start].color == color
     raise "No piece at that position." if self[start].nil?
     raise "Invalid move." unless self[start].moves.include?(end_pos)
@@ -65,14 +73,29 @@ class Board
         raise "Cannot take a piece of your own color"
       end
     end
+    true
+  end
 
+  def move(start, end_pos, color)
+
+    raise_move_errors(start, end_pos, color)
+
+    taken_piece = self[end_pos]
     self[start], self[end_pos] = nil, self[start]
+
+    unless taken_piece.nil?
+      taken_pieces = ( taken_piece.color == :white ? white_taken_pieces : black_taken_pieces )
+      taken_pieces << taken_piece
+    end
 
     moved_piece = self[end_pos]
     moved_piece.update_pos(end_pos)      #this seems stupid
-    moved_piece.first_move = false if moved_piece.is_a?(Pawn)
-
-    #might want to implement a .taken for self[end_pos]
+    if moved_piece.is_a?(Pawn)
+      moved_piece.first_move = false
+      if moved_piece.at_end?
+        self[end_pos] = Queen.new(self, moved_piece.color, end_pos)
+      end
+    end
   end
 
   def dup
@@ -96,7 +119,14 @@ class Board
     puts render(turn)
   end
 
+  protected
+  attr_writer :prev_pos
+
   private
+
+  def taken_pieces(color)
+    color == :white ? @white_taken_pieces : @black_taken_pieces
+  end
 
   def place_pieces
     self[[0, 0]] = Rook.new(self, :black, [0, 0])
@@ -124,14 +154,25 @@ class Board
   end
 
   def render(turn)
-    characters_array = CharsArray.new(self, turn).rows
+    characters_array = CharsArray.new(self, turn)
+    characters_array = characters_array.convert_to_chars.highlight_squares.rows
+    white_chars = CharsArray.new(self, turn).convert_taken_to_chars(:white)
+    black_chars = CharsArray.new(self, turn).convert_taken_to_chars(:black)
 
     str = ''
+    str << white_chars.join << "\n"
     characters_array.each do |row|
       row.each { |char| str << char }
       str << "\n"
     end
+    str << black_chars.join << "\n"
+
+    str << "White Current Time: #{clock.convert_times[0]} \t" <<
+           "White Total Time: #{clock.convert_times[1]}\n" <<
+           "Black Current Time: #{clock.convert_times[2]} \t" <<
+           "Black Total Time: #{clock.convert_times[3]}"
     str
+
   end
 
 end

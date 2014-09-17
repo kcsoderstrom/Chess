@@ -9,6 +9,7 @@ class Piece
     @pos = pos
     @board = board
     @board[pos] = self
+
   end
 
   def moves
@@ -40,7 +41,7 @@ class Piece
   def legal?(new_pos)
     test_board = self.board.dup
     begin
-      test_board.move(self.pos, new_pos, self.color)
+      test_board.raise_move_errors(self.pos, new_pos, self.color)
     rescue RuntimeError
       return false
     end
@@ -146,6 +147,10 @@ class Pawn < Piece
     diag_moves.reject! { |pos| board[pos].nil? }
 
     straight_moves + diag_moves
+  end
+
+  def at_end?
+    self.color == :white ? self.pos[0] == 0 : self.pos[0] == 7
   end
 
 end
