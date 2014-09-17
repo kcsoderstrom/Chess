@@ -28,15 +28,7 @@ class Game
       self.board.end_of_turn = false
 
       until self.board.end_of_turn
-        begin
-          clear_screen
-          board.display(@turn)
-          process_action(get_chr, :board_mode)
-          board.clock.tick(@turn)
-        rescue RuntimeError
-          puts "Error. Try again."
-          retry
-        end
+        play_turn
       end
       swap_turns
     end
@@ -56,6 +48,13 @@ class Game
     else
       puts "Oh OK that's cool. Thanks for playing I guess."
     end
+  end
+
+  def play_turn
+    clear_screen
+    board.display(@turn)
+    process_action(get_chr, :board_mode)
+    board.clock.tick(@turn)
   end
 
   def won?
