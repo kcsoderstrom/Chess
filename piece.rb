@@ -1,7 +1,9 @@
 require_relative 'board'
+require_relative 'chess_errors'
 
 class Piece
 
+  include ChessErrors
   attr_reader :board, :color, :pos
 
   def initialize(board = Board.new, color = :white, pos = [0, 0])
@@ -42,7 +44,7 @@ class Piece
     test_board = self.board.dup
     begin
       test_board.raise_move_errors(self.pos, new_pos, self.color)
-    rescue RuntimeError
+    rescue ArgumentError
       return false
     end
     true

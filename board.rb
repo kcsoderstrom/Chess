@@ -4,11 +4,13 @@ require_relative 'cursor'
 require_relative 'chars_array'
 require_relative 'plane_like'
 require_relative 'chess_clock'
+require_relative 'chess_errors'
 require 'colorize'
 
 class Board
 
   include PlaneLike
+  include ChessErrors
 
   COLORS = [:white, :black]
   UPGRADES = [ :Queen, :Bishop, :Knight, :Rook ]
@@ -39,7 +41,7 @@ class Board
       begin
         move(self.prev_pos, pos, turn)
         self.end_of_turn = true
-      rescue RuntimeError
+      rescue ArgumentError
         self.prev_pos = nil
       end
       self.prev_pos = nil
@@ -66,19 +68,7 @@ class Board
     end && in_check?(color)
   end
 
-  def raise_move_errors(start, end_pos, color)
-        #build these errors with names
-    raise "Move your own piece, cheater!" unless self[start].color == color
-    raise "No piece at that position." if self[start].nil?
-    raise "Invalid move." unless self[start].moves.include?(end_pos)
-    unless self[end_pos].nil?
-      raise "Cannot take the king." if self[end_pos].is_a?(King)
-      if self[end_pos].color == self[start].color
-        raise "Cannot take a piece of your own color"
-      end
-    end
-    true
-  end
+
 
   def move(start, end_pos, color)
 
@@ -88,8 +78,7 @@ class Board
     self[start], self[end_pos] = nil, self[start]
 
     unless taken_piece.nil?
-      taken_pieces = ( taken_piece.color == :white ? white_takens : black_takens )
-      taken_pieces << taken_piece
+      (taken_piece.color == :white ? white_takens : black_takens)<< taken_piece
     end
 
     moved_piece = self[end_pos]
