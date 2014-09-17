@@ -30,7 +30,9 @@ class CharsArray
     @bg_color = :light_black
   end
 
-  def characters_array
+  # Converts the board to characters, then highlights.
+  # Don't use this on the taken pieces.
+  def characters_array    # That's a terrible name.
     convert_to_chars
     highlight_squares
     self.rows
@@ -65,19 +67,6 @@ class CharsArray
     self[pos] = self[pos].colorize(:background => :cyan)
   end
 
-  def convert_taken_to_chars(color)
-    takens = ( color == :white ? board.takens[0] : board.takens[1])
-    num_pieces = takens.count
-    self.rows = []
-    color = takens[0].color unless takens.empty?
-    char_hash = (color == :white ? WHITE_CHARS : BLACK_CHARS)
-
-    num_pieces.times do |i|
-      piece = takens[i]
-      self.rows << char_hash[piece.class.to_s.to_sym].colorize(color)
-    end
-    self.rows
-  end
 
   def convert_to_chars
     self.rows = Array.new (8) { Array.new (8) }
@@ -90,7 +79,6 @@ class CharsArray
           else
             char = BLACK_CHARS[piece.class.to_s.to_sym]
           end
-          char = char.colorize(piece.color)
           char = char.colorize( :background => background_color_swap )
           self.rows[y][x] = char
         else
@@ -115,6 +103,20 @@ class CharsArray
     piece_types = char_hash.keys
 
     char_hash[ piece_types[piece_index] ]
+  end
+
+  def convert_taken_to_chars(color)
+    takens = ( color == :white ? board.takens[0] : board.takens[1])
+    num_pieces = takens.count
+    self.rows = []
+    color = takens[0].color unless takens.empty?
+    char_hash = (color == :white ? WHITE_CHARS : BLACK_CHARS)
+
+    num_pieces.times do |i|
+      piece = takens[i]
+      self.rows << char_hash[piece.class.to_s.to_sym]
+    end
+    self.rows
   end
 
 end

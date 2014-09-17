@@ -80,7 +80,7 @@ class Board
     moved_piece.update_pos(end_pos)      #this seems stupid
     moved_piece.first_move = false
 
-    @mode = :upgrade if moved_piece.at_end? if moved_piece.is_a?(Pawn)
+    @mode = :upgrade if moved_piece.is_a?(Pawn) && moved_piece.at_end?
   end
 
   def scroll_upgrade(pos)
@@ -110,7 +110,7 @@ class Board
     duped = Board.new
     8.times do |y|
       rows[y].each_with_index do |piece, x|
-        duped[[y,x]] = nil
+        duped[[y,x]] = nil                   # Have to do this bc place_pieces
         unless self[[y,x]].nil?
           duped[[y,x]] = piece.class.new(duped,piece.color,[y, x])
         end

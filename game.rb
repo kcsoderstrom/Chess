@@ -69,7 +69,6 @@ class Game
   end
 
   def swap_turns
-    p @turn
     @turn == :white ? @turn = :black : @turn = :white
   end
 

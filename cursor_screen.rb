@@ -1,4 +1,4 @@
-# tools necessary for using the Cursor class effectively
+# Tools necessary for using the Cursor class effectively
 
 module CursorScreen
 
