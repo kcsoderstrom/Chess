@@ -1,6 +1,10 @@
 require_relative 'board'
 require_relative 'game'
 
+# You will need to make a directory called save_files in your current directory.
+# This module is made to work with the TitleScreen class. Ideally it will be made
+# more general in the future.
+
 module SaveLoad
 
   def load
